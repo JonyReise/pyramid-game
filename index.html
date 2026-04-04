@@ -124,7 +124,7 @@ function addPyramidLevel(){
   pyramidDiv.appendChild(level);
 }
 
-// --- Бросок кубика с физикой ---
+// --- Бросок кубика ---
 async function rollDice3D(finalNumber){
   let vx=(Math.random()*10-5)*0.1;
   let vy=(Math.random()*10-5)*0.1;
@@ -141,7 +141,6 @@ async function rollDice3D(finalNumber){
       renderer.render(scene,camera);
       if(frames>0) requestAnimationFrame(animate);
       else {
-        // установка кубика на нужную грань
         const angles = [
           [0,0,0],[Math.PI/2,0,0],[0,Math.PI/2,0],[0,-Math.PI/2,0],[Math.PI,0,0],[-Math.PI/2,0,0]
         ];
@@ -157,7 +156,6 @@ async function rollDice3D(finalNumber){
   });
 }
 
-// --- Обработка выбора ---
 async function handleChoice(choice){
   const finalNumber=Math.floor(Math.random()*6)+1;
   await rollDice3D(finalNumber);
