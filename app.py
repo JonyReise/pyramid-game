@@ -3,7 +3,7 @@ import random
 
 app = Flask(__name__)
 
-# Словарь для хранения игроков по chat_id
+# Игроки хранятся в памяти
 players = {}
 
 def get_player(chat_id):
@@ -11,7 +11,7 @@ def get_player(chat_id):
         players[chat_id] = {"hp": 3, "level": 0}
     return players[chat_id]
 
-# Главная страница - браузерный интерфейс
+# Главная страница (браузерный интерфейс)
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -44,7 +44,7 @@ def move():
         text = f"✅ {number} — угадал! Уровень: {player['level']}"
     else:
         player["hp"] -= 1
-        text = f"❌ {number} — ошибка! ❤️ {player['hp']}"
+        text = f"❌ {number} — не угадал! ❤️ {player['hp']}"
 
     if player["hp"] <= 0:
         return jsonify({"text": "💀 Ты проиграл", "buttons": ["restart"]})
