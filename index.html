@@ -99,8 +99,8 @@
   <div id="pyramid"></div>
 
   <script>
-    let chat_id = Date.now(); // уникальная сессия
-    let consecutiveWins = 0; // счётчик подряд угаданных бросков
+    let chat_id = Date.now();
+    let consecutiveWins = 0;
     const maxWinsForLevel = 3;
 
     const startBtn = document.getElementById('start');
@@ -109,7 +109,7 @@
     const diceDiv = document.getElementById('dice');
     const pyramidDiv = document.getElementById('pyramid');
 
-    startBtn.onclick = async () => {
+    startBtn.onclick = () => {
       startBtn.style.display = 'none';
       textDiv.innerText = "🏺 Ты вошёл в пирамиду! Выбери парное или непарное:";
       renderButtons(["even", "odd"]);
@@ -126,7 +126,7 @@
     }
 
     async function handleChoice(choice) {
-      // Анимация броска кубика
+      // анимация броска кубика
       diceDiv.innerText = "🎲 ...";
       await new Promise(r => setTimeout(r, 600));
 
