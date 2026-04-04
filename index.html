@@ -2,44 +2,61 @@
 <html>
 <head>
   <title>Игра Пирамида</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       font-family: Arial, sans-serif;
+      background-color: #fff8dc;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
-      padding: 20px;
-      background-color: #fff8dc; /* можно выбрать фоновый цвет Египта */
     }
+
     h1 {
-      font-size: 2em;
+      font-size: 2.5em;
       margin-bottom: 20px;
     }
+
     #text {
-      font-size: 1.5em;
+      font-size: 1.8em;
       margin: 20px 0;
+      line-height: 1.4em;
     }
-    button {
-      font-size: 1.5em;
-      padding: 15px 25px;
-      margin: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      background-color: #f4a460; /* песочный цвет */
-      border: none;
-      color: white;
-    }
-    button:hover {
-      background-color: #e5943b;
-    }
+
     #buttons {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 15px;
+      width: 90%;
+      max-width: 400px;
+      margin-top: 10px;
     }
-    @media (min-width: 600px) {
-      #buttons {
-        flex-direction: row;
-      }
+
+    button {
+      font-size: 1.8em;
+      padding: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: none;
+      background-color: #f4a460;
+      color: white;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #e5943b;
+    }
+
+    #start {
+      margin-top: 10px;
+      width: 90%;
+      max-width: 400px;
     }
   </style>
 </head>
@@ -50,21 +67,24 @@
   <div id="buttons"></div>
 
   <script>
-    let chat_id = Date.now(); // простой идентификатор сессии
-    document.getElementById('start').onclick = async () => {
+    let chat_id = Date.now(); // уникальный идентификатор сессии
+    const startBtn = document.getElementById('start');
+    const textDiv = document.getElementById('text');
+    const buttonsDiv = document.getElementById('buttons');
+
+    startBtn.onclick = async () => {
       const res = await fetch('/start', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({chat_id})
       });
       const data = await res.json();
-      document.getElementById('text').innerText = data.text;
+      textDiv.innerText = data.text;
       renderButtons(data.buttons);
     };
 
     function renderButtons(buttons) {
-      const div = document.getElementById('buttons');
-      div.innerHTML = '';
+      buttonsDiv.innerHTML = '';
       buttons.forEach(b => {
         const btn = document.createElement('button');
         btn.innerText = b;
@@ -75,10 +95,10 @@
             body: JSON.stringify({chat_id, choice: b})
           });
           const data = await res.json();
-          document.getElementById('text').innerText = data.text;
+          textDiv.innerText = data.text;
           if(data.buttons) renderButtons(data.buttons);
         };
-        div.appendChild(btn);
+        buttonsDiv.appendChild(btn);
       });
     }
   </script>
