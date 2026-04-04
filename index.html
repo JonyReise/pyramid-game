@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Игра Пирамида</title>
+</head>
+<body>
+  <h1>🏺 Пирамида</h1>
+  <div id="text">Нажми "Старт" чтобы начать игру</div>
+  <button id="start">Старт</button>
+  <div id="buttons"></div>
+
+  <script>
+    let chat_id = Date.now(); // простой идентификатор сессии
+    document.getElementById('start').onclick = async () => {
+      const res = await fetch('/start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({chat_id})
+      });
+      const data = await res.json();
+      document.getElementById('text').innerText = data.text;
+      renderButtons(data.buttons);
+    };
+
+    function renderButtons(buttons) {
+      const div = document.getElementById('buttons');
+      div.innerHTML = '';
+      buttons.forEach(b => {
+        const btn = document.createElement('button');
+        btn.innerText = b;
+        btn.onclick = async () => {
+          const res = await fetch('/move', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({chat_id, choice: b})
+          });
+          const data = await res.json();
+          document.getElementById('text').innerText = data.text;
+          if(data.buttons) renderButtons(data.buttons);
+        };
+        div.appendChild(btn);
+      });
+    }
+  </script>
+</body>
+</html>
