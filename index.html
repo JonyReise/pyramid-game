@@ -13,71 +13,109 @@
       background-color: #fff8dc;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
       align-items: center;
       text-align: center;
     }
+
     h1 { font-size: 2.5em; margin-top: 20px; }
     #text { font-size: 1.8em; margin: 20px 0; min-height: 50px; }
+
     #buttons { display:flex; gap:15px; margin-bottom:20px; }
+
     button {
       font-size:1.8em;
       padding:15px 25px;
       border-radius:12px;
-      cursor:pointer;
       border:none;
+      cursor:pointer;
       background-color:#f4a460;
       color:white;
       min-width:120px;
-      transition: transform 0.2s;
     }
-    button:hover { background-color:#e5943b; transform:scale(1.05); }
-    #diceCanvas { border:2px solid #000; background:#fff; margin:20px 0; width:200px; height:200px; }
-    #pyramid { display:flex; flex-direction:column-reverse; align-items:center; margin-bottom:20px; }
-    .pyramid-level { width:60px; height:40px; background-color:#d2b48c; margin:2px 0; border-radius:5px; transform:translateY(50px); opacity:0; animation:rise 0.5s forwards; }
-    @keyframes rise { from{transform:translateY(50px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+
+    #diceCanvas {
+      border:2px solid #000;
+      background:#fff;
+      margin:20px 0;
+      width:200px;
+      height:200px;
+    }
+
+    #pyramid {
+      display:flex;
+      flex-direction:column-reverse;
+      align-items:center;
+      margin-bottom:20px;
+    }
+
+    .pyramid-level {
+      width:60px;
+      height:40px;
+      background:#d2b48c;
+      margin:2px 0;
+      border-radius:5px;
+      animation:rise 0.5s forwards;
+    }
+
+    @keyframes rise {
+      from { transform:translateY(50px); opacity:0; }
+      to { transform:translateY(0); opacity:1; }
+    }
   </style>
+
+  <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
 </head>
+
 <body>
   <h1>🏺 Пирамида 3D</h1>
   <div id="text">Нажми "Старт" чтобы начать игру</div>
   <button id="start">Старт</button>
+
   <canvas id="diceCanvas"></canvas>
+
   <div id="buttons"></div>
   <div id="pyramid"></div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const chat_id = Date.now();
+
 const startBtn = document.getElementById('start');
 const textDiv = document.getElementById('text');
 const buttonsDiv = document.getElementById('buttons');
 const pyramidDiv = document.getElementById('pyramid');
 const canvas = document.getElementById('diceCanvas');
 
-// --- Three.js сцена ---
+
+// --- Three.js ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45,1,0.1,1000);
 camera.position.z = 3;
+
 const renderer = new THREE.WebGLRenderer({canvas, alpha:true});
 renderer.setSize(200,200);
-renderer.shadowMap.enabled = true;
 
-// Свет
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(5,5,5);
 scene.add(light);
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
+
 
 // --- Кубик ---
 function makeDiceTexture(number){
-  const size=128;
-  const c=document.createElement('canvas');
-  c.width=c.height=size;
-  const ctx=c.getContext('2d');
+  const size = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+
   ctx.fillStyle='white';
   ctx.fillRect(0,0,size,size);
+
   ctx.fillStyle='black';
+
   const pos={
     1:[[0.5,0.5]],
     2:[[0.25,0.25],[0.75,0.75]],
@@ -86,15 +124,17 @@ function makeDiceTexture(number){
     5:[[0.25,0.25],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0.75,0.75]],
     6:[[0.25,0.25],[0.75,0.25],[0.25,0.5],[0.75,0.5],[0.25,0.75],[0.75,0.75]]
   };
+
   pos[number].forEach(p=>{
     ctx.beginPath();
     ctx.arc(p[0]*size,p[1]*size,10,0,Math.PI*2);
     ctx.fill();
   });
+
   return new THREE.CanvasTexture(c);
 }
 
-const mats=[
+const materials = [
   new THREE.MeshPhongMaterial({map:makeDiceTexture(1)}),
   new THREE.MeshPhongMaterial({map:makeDiceTexture(2)}),
   new THREE.MeshPhongMaterial({map:makeDiceTexture(6)}),
@@ -104,89 +144,109 @@ const mats=[
 ];
 
 const geometry = new THREE.BoxGeometry(1,1,1);
-const dice = new THREE.Mesh(geometry,mats);
-dice.castShadow=true;
+const dice = new THREE.Mesh(geometry, materials);
 scene.add(dice);
 
-// Пол
-const planeGeo=new THREE.PlaneGeometry(5,5);
-const planeMat=new THREE.ShadowMaterial({opacity:0.3});
-const plane=new THREE.Mesh(planeGeo,planeMat);
-plane.rotation.x=-Math.PI/2;
-plane.position.y=-0.5;
-plane.receiveShadow=true;
-scene.add(plane);
 
-function animateCube(){ renderer.render(scene,camera); requestAnimationFrame(animateCube);}
-animateCube();
+// --- Рендер ---
+function animate(){
+  requestAnimationFrame(animate);
+  renderer.render(scene,camera);
+}
+animate();
+
 
 // --- UI ---
-startBtn.onclick=async()=>{
-  startBtn.style.display='none';
-  const res=await fetch('/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id})});
-  const data=await res.json();
-  textDiv.innerText=data.text;
+startBtn.onclick = async () => {
+  startBtn.style.display = 'none';
+
+  const res = await fetch('/start',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({chat_id})
+  });
+
+  const data = await res.json();
+
+  textDiv.innerText = data.text;
   renderButtons(data.buttons);
 };
 
+
 function renderButtons(buttons){
-  buttonsDiv.innerHTML='';
+  buttonsDiv.innerHTML = '';
+
   buttons.forEach(b=>{
-    const btn=document.createElement('button');
-    btn.innerText=b;
-    btn.onclick=()=>handleChoice(b);
+    const btn = document.createElement('button');
+    btn.innerText = b;
+    btn.onclick = ()=>handleChoice(b);
     buttonsDiv.appendChild(btn);
   });
 }
 
+
 function addPyramidLevel(){
-  const level=document.createElement('div');
+  const level = document.createElement('div');
   level.classList.add('pyramid-level');
   pyramidDiv.appendChild(level);
 }
 
-// --- Анимация кубика ---
-async function rollDice3D(finalNumber){
+
+// --- Бросок кубика ---
+async function rollDice(finalNumber){
   let vx=(Math.random()*10-5)*0.1;
   let vy=(Math.random()*10-5)*0.1;
-  let vz=(Math.random()*10-5)*0.1;
-  let frames=80;
+
+  let frames=60;
 
   return new Promise(resolve=>{
-    function animate(){
+    function anim(){
       frames--;
-      dice.rotation.x+=vx; dice.rotation.y+=vy; dice.rotation.z+=vz;
-      vx*=0.95; vy*=0.95; vz*=0.95;
+
+      dice.rotation.x += vx;
+      dice.rotation.y += vy;
+
+      vx *= 0.95;
+      vy *= 0.95;
+
       renderer.render(scene,camera);
-      if(frames>0) requestAnimationFrame(animate);
-      else{
-        const angles=[[0,0,0],[Math.PI/2,0,0],[0,Math.PI/2,0],[0,-Math.PI/2,0],[Math.PI,0,0],[-Math.PI/2,0,0]];
-        const idx=finalNumber-1;
-        dice.rotation.x=angles[idx][0]; dice.rotation.y=angles[idx][1]; dice.rotation.z=angles[idx][2];
-        renderer.render(scene,camera);
+
+      if(frames>0){
+        requestAnimationFrame(anim);
+      } else {
         resolve();
       }
     }
-    animate();
+    anim();
   });
 }
 
-// --- Обработка выбора ---
-async function handleChoice(choice){
-  const finalNumber=Math.floor(Math.random()*6)+1;
-  await rollDice3D(finalNumber);
 
-  const res=await fetch('/move',{
+// --- Ход ---
+async function handleChoice(choice){
+
+  const number = Math.floor(Math.random()*6)+1;
+
+  await rollDice(number);
+
+  const res = await fetch('/move',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({chat_id, choice})
+    body: JSON.stringify({chat_id, choice})
   });
-  const data=await res.json();
 
-  textDiv.innerText=data.text;
+  const data = await res.json();
+
+  textDiv.innerText = data.text;
   renderButtons(data.buttons);
-  if(data.build_level) addPyramidLevel();
+
+  if(data.build_level){
+    addPyramidLevel();
+  }
 }
+
+});
 </script>
+
 </body>
 </html>
