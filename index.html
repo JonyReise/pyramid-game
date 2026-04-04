@@ -13,50 +13,80 @@
       background-color: #fff8dc;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       text-align: center;
     }
 
     h1 {
       font-size: 2.5em;
-      margin-bottom: 20px;
+      margin-top: 20px;
     }
 
     #text {
       font-size: 1.8em;
       margin: 20px 0;
       line-height: 1.4em;
+      min-height: 50px;
     }
 
     #buttons {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 15px;
-      width: 90%;
-      max-width: 400px;
-      margin-top: 10px;
+      margin-bottom: 20px;
     }
 
     button {
       font-size: 1.8em;
-      padding: 20px;
+      padding: 15px 25px;
       border-radius: 12px;
       cursor: pointer;
       border: none;
       background-color: #f4a460;
       color: white;
-      width: 100%;
+      min-width: 100px;
+      transition: transform 0.2s;
     }
 
     button:hover {
       background-color: #e5943b;
+      transform: scale(1.05);
     }
 
-    #start {
-      margin-top: 10px;
-      width: 90%;
-      max-width: 400px;
+    #dice {
+      font-size: 3em;
+      margin: 20px 0;
+      min-height: 50px;
+    }
+
+    #pyramid {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .pyramid-level {
+      width: 60px;
+      height: 40px;
+      background-color: #d2b48c;
+      margin: 2px 0;
+      border-radius: 5px;
+      transform: translateY(50px);
+      opacity: 0;
+      animation: rise 0.5s forwards;
+    }
+
+    @keyframes rise {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -64,23 +94,25 @@
   <h1>🏺 Пирамида</h1>
   <div id="text">Нажми "Старт" чтобы начать игру</div>
   <button id="start">Старт</button>
+  <div id="dice"></div>
   <div id="buttons"></div>
+  <div id="pyramid"></div>
 
   <script>
-    let chat_id = Date.now(); // уникальный идентификатор сессии
+    let chat_id = Date.now(); // уникальная сессия
+    let consecutiveWins = 0; // счётчик подряд угаданных бросков
+    const maxWinsForLevel = 3;
+
     const startBtn = document.getElementById('start');
     const textDiv = document.getElementById('text');
     const buttonsDiv = document.getElementById('buttons');
+    const diceDiv = document.getElementById('dice');
+    const pyramidDiv = document.getElementById('pyramid');
 
     startBtn.onclick = async () => {
-      const res = await fetch('/start', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({chat_id})
-      });
-      const data = await res.json();
-      textDiv.innerText = data.text;
-      renderButtons(data.buttons);
+      startBtn.style.display = 'none';
+      textDiv.innerText = "🏺 Ты вошёл в пирамиду! Выбери парное или непарное:";
+      renderButtons(["even", "odd"]);
     };
 
     function renderButtons(buttons) {
@@ -88,18 +120,36 @@
       buttons.forEach(b => {
         const btn = document.createElement('button');
         btn.innerText = b;
-        btn.onclick = async () => {
-          const res = await fetch('/move', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({chat_id, choice: b})
-          });
-          const data = await res.json();
-          textDiv.innerText = data.text;
-          if(data.buttons) renderButtons(data.buttons);
-        };
+        btn.onclick = () => handleChoice(b);
         buttonsDiv.appendChild(btn);
       });
+    }
+
+    async function handleChoice(choice) {
+      // Анимация броска кубика
+      diceDiv.innerText = "🎲 ...";
+      await new Promise(r => setTimeout(r, 600));
+
+      const number = Math.floor(Math.random() * 10) + 1;
+      const result = (number % 2 === 0) ? "even" : "odd";
+      diceDiv.innerText = number;
+
+      if (choice === result) {
+        consecutiveWins++;
+        textDiv.innerText = `✅ ${number} — угадал!`;
+        if (consecutiveWins % maxWinsForLevel === 0) {
+          addPyramidLevel();
+        }
+      } else {
+        textDiv.innerText = `❌ ${number} — не угадал!`;
+        consecutiveWins = 0;
+      }
+    }
+
+    function addPyramidLevel() {
+      const level = document.createElement('div');
+      level.classList.add('pyramid-level');
+      pyramidDiv.appendChild(level);
     }
   </script>
 </body>
