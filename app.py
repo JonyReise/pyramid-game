@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import random
 
 app = Flask(__name__)
 
+# Словарь для хранения игроков по chat_id
 players = {}
 
 def get_player(chat_id):
@@ -10,27 +11,31 @@ def get_player(chat_id):
         players[chat_id] = {"hp": 3, "level": 0}
     return players[chat_id]
 
-@app.route("/start", methods=["POST"])
+# Главная страница - браузерный интерфейс
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+# Старт игры
+@app.route('/start', methods=['POST'])
 def start():
     chat_id = str(request.json["chat_id"])
     player = get_player(chat_id)
-
     player["hp"] = 3
     player["level"] = 0
-
     return jsonify({
-        "text": "🏺 Ты вошёл в пирамиду! Парное или непарное?",
+        "text": "🏺 Ты вошёл в пирамиду! Выбери парное или непарное:",
         "buttons": ["even", "odd"]
     })
 
-@app.route("/move", methods=["POST"])
+# Сделать ход
+@app.route('/move', methods=['POST'])
 def move():
     data = request.json
     chat_id = str(data["chat_id"])
     choice = data["choice"]
 
     player = get_player(chat_id)
-
     number = random.randint(1, 10)
     result = "even" if number % 2 == 0 else "odd"
 
@@ -48,7 +53,3 @@ def move():
         return jsonify({"text": "🏆 Победа!", "buttons": ["restart"]})
 
     return jsonify({"text": text, "buttons": ["even", "odd"]})
-
-@app.route("/")
-def home():
-    return "Server is running"
