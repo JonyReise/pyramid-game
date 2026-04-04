@@ -45,7 +45,7 @@
       border: none;
       background-color: #f4a460;
       color: white;
-      min-width: 100px;
+      min-width: 120px;
       transition: transform 0.2s;
     }
 
@@ -111,8 +111,8 @@
 
     startBtn.onclick = () => {
       startBtn.style.display = 'none';
-      textDiv.innerText = "🏺 Ты вошёл в пирамиду! Выбери парное или непарное:";
-      renderButtons(["even", "odd"]);
+      textDiv.innerText = "🏺 Ты вошёл в пирамиду! Выбери Парное или Непарное:";
+      renderButtons(["Парное", "Непарное"]);
     };
 
     function renderButtons(buttons) {
@@ -126,12 +126,16 @@
     }
 
     async function handleChoice(choice) {
-      // анимация броска кубика
-      diceDiv.innerText = "🎲 ...";
-      await new Promise(r => setTimeout(r, 600));
+      // Анимация броска кубика
+      const rollCount = 10;
+      for(let i=0; i<rollCount; i++){
+        const temp = Math.floor(Math.random() * 10) + 1;
+        diceDiv.innerText = temp;
+        await new Promise(r => setTimeout(r, 50 + i*10));
+      }
 
       const number = Math.floor(Math.random() * 10) + 1;
-      const result = (number % 2 === 0) ? "even" : "odd";
+      const result = (number % 2 === 0) ? "Парное" : "Непарное";
       diceDiv.innerText = number;
 
       if (choice === result) {
