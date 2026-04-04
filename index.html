@@ -2,6 +2,46 @@
 <html>
 <head>
   <title>Игра Пирамида</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #fff8dc; /* можно выбрать фоновый цвет Египта */
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    #text {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 15px 25px;
+      margin: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: #f4a460; /* песочный цвет */
+      border: none;
+      color: white;
+    }
+    button:hover {
+      background-color: #e5943b;
+    }
+    #buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    @media (min-width: 600px) {
+      #buttons {
+        flex-direction: row;
+      }
+    }
+  </style>
 </head>
 <body>
   <h1>🏺 Пирамида</h1>
