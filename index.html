@@ -33,7 +33,7 @@ const buttonsDiv = document.getElementById('buttons');
 const pyramidDiv = document.getElementById('pyramid');
 const canvas = document.getElementById('diceCanvas3D');
 
-// --- Three.js сцена ---
+// --- Three.js ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 camera.position.z = 3;
@@ -46,11 +46,9 @@ const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(5,5,5);
 light.castShadow = true;
 scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
 
-const ambient = new THREE.AmbientLight(0xffffff,0.5);
-scene.add(ambient);
-
-// --- Кубик с пипсами на гранях ---
+// --- Кубик с точками ---
 function makeDiceTexture(number){
   const size = 128;
   const canvasTex = document.createElement('canvas');
@@ -89,7 +87,7 @@ const dice = new THREE.Mesh(geometry,materials);
 dice.castShadow=true;
 scene.add(dice);
 
-// --- Пол плавности ---
+// Пол для тени
 const planeGeo = new THREE.PlaneGeometry(5,5);
 const planeMat = new THREE.ShadowMaterial({opacity:0.3});
 const plane = new THREE.Mesh(planeGeo, planeMat);
@@ -106,7 +104,7 @@ startBtn.onclick = async () => {
   startBtn.style.display='none';
   const res = await fetch('/start', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chat_id})});
   const data = await res.json();
-  textDiv.innerText=data.text;
+  textDiv.innerText = data.text;
   renderButtons(data.buttons);
 };
 
@@ -126,7 +124,7 @@ function addPyramidLevel(){
   pyramidDiv.appendChild(level);
 }
 
-// --- Реалистичный бросок кубика с инерцией ---
+// --- Бросок кубика с физикой ---
 async function rollDice3D(finalNumber){
   let vx=(Math.random()*10-5)*0.1;
   let vy=(Math.random()*10-5)*0.1;
@@ -139,16 +137,13 @@ async function rollDice3D(finalNumber){
       dice.rotation.x += vx;
       dice.rotation.y += vy;
       dice.rotation.z += vz;
-
-      // замедление
       vx*=0.95; vy*=0.95; vz*=0.95;
-
       renderer.render(scene,camera);
       if(frames>0) requestAnimationFrame(animate);
       else {
-        // установка кубика на нужную грань (упрощённо)
+        // установка кубика на нужную грань
         const angles = [
-          [0,0,0],[Math.PI/2,0,0],[0,Math.PI/2,0],[0,-Math.PI/2,0],[Math.PI,0,0],[ -Math.PI/2,0,0]
+          [0,0,0],[Math.PI/2,0,0],[0,Math.PI/2,0],[0,-Math.PI/2,0],[Math.PI,0,0],[-Math.PI/2,0,0]
         ];
         const idx = finalNumber-1;
         dice.rotation.x=angles[idx][0];
