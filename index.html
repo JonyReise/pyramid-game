@@ -100,19 +100,23 @@
 
   <script>
     let chat_id = Date.now();
-    let consecutiveWins = 0;
-    const maxWinsForLevel = 3;
-
     const startBtn = document.getElementById('start');
     const textDiv = document.getElementById('text');
     const buttonsDiv = document.getElementById('buttons');
     const diceDiv = document.getElementById('dice');
     const pyramidDiv = document.getElementById('pyramid');
 
-    startBtn.onclick = () => {
+    startBtn.onclick = async () => {
       startBtn.style.display = 'none';
-      textDiv.innerText = "🏺 Ты вошёл в пирамиду! Выбери Парное или Непарное:";
-      renderButtons(["Парное", "Непарное"]);
+      // отправляем на сервер старт
+      const res = await fetch('/start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({chat_id})
+      });
+      const data = await res.json();
+      textDiv.innerText = data.text;
+      renderButtons(data.buttons);
     };
 
     function renderButtons(buttons) {
@@ -126,31 +130,31 @@
     }
 
     async function handleChoice(choice) {
-      // Анимация броска кубика
+      // анимация броска кубика
       const rollCount = 10;
-      for(let i=0; i<rollCount; i++){
-        const temp = Math.floor(Math.random() * 10) + 1;
+      for(let i=0;i<rollCount;i++){
+        const temp = Math.floor(Math.random()*10)+1;
         diceDiv.innerText = temp;
-        await new Promise(r => setTimeout(r, 50 + i*10));
+        await new Promise(r=>setTimeout(r,50 + i*10));
       }
 
-      const number = Math.floor(Math.random() * 10) + 1;
-      const result = (number % 2 === 0) ? "Парное" : "Непарное";
-      diceDiv.innerText = number;
+      // отправка на сервер
+      const res = await fetch('/move', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({chat_id, choice})
+      });
+      const data = await res.json();
 
-      if (choice === result) {
-        consecutiveWins++;
-        textDiv.innerText = `✅ ${number} — угадал!`;
-        if (consecutiveWins % maxWinsForLevel === 0) {
-          addPyramidLevel();
-        }
-      } else {
-        textDiv.innerText = `❌ ${number} — не угадал!`;
-        consecutiveWins = 0;
+      textDiv.innerText = data.text;
+      renderButtons(data.buttons);
+
+      if(data.build_level){
+        addPyramidLevel();
       }
     }
 
-    function addPyramidLevel() {
+    function addPyramidLevel(){
       const level = document.createElement('div');
       level.classList.add('pyramid-level');
       pyramidDiv.appendChild(level);
