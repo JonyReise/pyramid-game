@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import random
 
 app = Flask(__name__)
+CORS(app)  # Разрешаем CORS, чтобы фронтенд мог делать fetch с любого домена
 players = {}
 
 def get_player(chat_id):
@@ -9,12 +11,10 @@ def get_player(chat_id):
         players[chat_id] = {"hp": 3, "level": 0}
     return players[chat_id]
 
-# Главная страница
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
-# Старт игры
 @app.route('/start', methods=['POST'])
 def start():
     chat_id = str(request.json["chat_id"])
@@ -26,7 +26,6 @@ def start():
         "buttons": ["even", "odd"]
     })
 
-# Ход игрока
 @app.route('/move', methods=['POST'])
 def move():
     data = request.json
