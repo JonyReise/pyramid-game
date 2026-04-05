@@ -3,6 +3,7 @@
 <head>
   <title>Игра Пирамида</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <style>
     html, body {
       margin: 0;
@@ -18,64 +19,79 @@
     }
 
     h1 { font-size: 2.5em; margin-top: 20px; }
-    #text { font-size: 1.8em; margin: 20px 0; min-height: 50px; }
 
-    #buttons { display:flex; gap:15px; margin-bottom:20px; }
+    #text {
+      font-size: 1.8em;
+      margin: 20px 0;
+      min-height: 50px;
+    }
+
+    #buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
 
     button {
-      font-size:1.8em;
-      padding:15px 25px;
-      border-radius:12px;
-      border:none;
-      cursor:pointer;
-      background-color:#f4a460;
-      color:white;
-      min-width:120px;
+      font-size: 1.8em;
+      padding: 15px 25px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background-color: #f4a460;
+      color: white;
+      min-width: 120px;
     }
 
     #diceCanvas {
-      border:2px solid #000;
-      background:#fff;
-      margin:20px 0;
-      width:200px;
-      height:200px;
+      border: 2px solid #000;
+      background: #fff;
+      margin: 20px 0;
+      width: 200px;
+      height: 200px;
     }
 
     #pyramid {
-      display:flex;
-      flex-direction:column-reverse;
-      align-items:center;
-      margin-bottom:20px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
     .pyramid-level {
-      width:60px;
-      height:40px;
-      background:#d2b48c;
-      margin:2px 0;
-      border-radius:5px;
-      animation:rise 0.5s forwards;
+      width: 60px;
+      height: 40px;
+      background: #d2b48c;
+      margin: 2px 0;
+      border-radius: 5px;
+      animation: rise 0.5s forwards;
     }
 
     @keyframes rise {
-      from { transform:translateY(50px); opacity:0; }
-      to { transform:translateY(0); opacity:1; }
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 
-  <!-- Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.min.js"></script>
+  <!-- ✅ ЛОКАЛЬНЫЙ Three.js -->
+  <script src="/static/three.min.js"></script>
+
 </head>
 
 <body>
+
   <h1>🏺 Пирамида 3D</h1>
+
   <div id="text">Нажми "Старт" чтобы начать игру</div>
+
   <button id="start">Старт</button>
 
   <canvas id="diceCanvas"></canvas>
 
   <div id="buttons"></div>
+
   <div id="pyramid"></div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -91,32 +107,33 @@ const canvas = document.getElementById('diceCanvas');
 
 // --- Three.js ---
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45,1,0.1,1000);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 camera.position.z = 3;
 
-const renderer = new THREE.WebGLRenderer({canvas, alpha:true});
-renderer.setSize(200,200);
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+renderer.setSize(200, 200);
 
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(5,5,5);
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
 scene.add(light);
 
 
 // --- Кубик ---
-function makeDiceTexture(number){
+function makeDiceTexture(number) {
   const size = 128;
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const ctx = c.getContext('2d');
 
-  ctx.fillStyle='white';
-  ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, size, size);
 
-  ctx.fillStyle='black';
+  ctx.fillStyle = 'black';
 
-  const pos={
+  const pos = {
     1:[[0.5,0.5]],
     2:[[0.25,0.25],[0.75,0.75]],
     3:[[0.25,0.25],[0.5,0.5],[0.75,0.75]],
@@ -125,9 +142,9 @@ function makeDiceTexture(number){
     6:[[0.25,0.25],[0.75,0.25],[0.25,0.5],[0.75,0.5],[0.25,0.75],[0.75,0.75]]
   };
 
-  pos[number].forEach(p=>{
+  pos[number].forEach(p => {
     ctx.beginPath();
-    ctx.arc(p[0]*size,p[1]*size,10,0,Math.PI*2);
+    ctx.arc(p[0]*size, p[1]*size, 10, 0, Math.PI*2);
     ctx.fill();
   });
 
@@ -149,9 +166,9 @@ scene.add(dice);
 
 
 // --- Рендер ---
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 animate();
 
@@ -160,7 +177,7 @@ animate();
 startBtn.onclick = async () => {
   startBtn.style.display = 'none';
 
-  const res = await fetch('/start',{
+  const res = await fetch('/start', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({chat_id})
@@ -173,19 +190,19 @@ startBtn.onclick = async () => {
 };
 
 
-function renderButtons(buttons){
+function renderButtons(buttons) {
   buttonsDiv.innerHTML = '';
 
-  buttons.forEach(b=>{
+  buttons.forEach(b => {
     const btn = document.createElement('button');
     btn.innerText = b;
-    btn.onclick = ()=>handleChoice(b);
+    btn.onclick = () => handleChoice(b);
     buttonsDiv.appendChild(btn);
   });
 }
 
 
-function addPyramidLevel(){
+function addPyramidLevel() {
   const level = document.createElement('div');
   level.classList.add('pyramid-level');
   pyramidDiv.appendChild(level);
@@ -193,14 +210,14 @@ function addPyramidLevel(){
 
 
 // --- Бросок кубика ---
-async function rollDice(finalNumber){
-  let vx=(Math.random()*10-5)*0.1;
-  let vy=(Math.random()*10-5)*0.1;
+async function rollDice() {
+  let vx = (Math.random()*10-5)*0.1;
+  let vy = (Math.random()*10-5)*0.1;
 
-  let frames=60;
+  let frames = 60;
 
-  return new Promise(resolve=>{
-    function anim(){
+  return new Promise(resolve => {
+    function anim() {
       frames--;
 
       dice.rotation.x += vx;
@@ -209,9 +226,7 @@ async function rollDice(finalNumber){
       vx *= 0.95;
       vy *= 0.95;
 
-      renderer.render(scene,camera);
-
-      if(frames>0){
+      if(frames > 0){
         requestAnimationFrame(anim);
       } else {
         resolve();
@@ -223,13 +238,11 @@ async function rollDice(finalNumber){
 
 
 // --- Ход ---
-async function handleChoice(choice){
+async function handleChoice(choice) {
 
-  const number = Math.floor(Math.random()*6)+1;
+  await rollDice();
 
-  await rollDice(number);
-
-  const res = await fetch('/move',{
+  const res = await fetch('/move', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({chat_id, choice})
